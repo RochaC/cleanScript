@@ -99,3 +99,13 @@ ENV/
 
 # mypy
 .mypy_cache/
+*.gz
+*.csv
+*.zip
+detail log/messages-201707/messages.20170701-2359
+detail log/messages-201707/messages.20170702-2359
+detail log/messages-201707/messages.20170703-2359
+detail log/messages-201707/messages.20170704-2359
+detail log/messages.20170620-2359
+boot.log.20170807-2359
+detail log/blacklist
