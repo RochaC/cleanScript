@@ -109,3 +109,13 @@ detail log/messages-201707/messages.20170704-2359
 detail log/messages.20170620-2359
 boot.log.20170807-2359
 detail log/blacklist
+detail log/boot.log.20170903-2359
+messageLog/data/messages-201707/messages.20170701-2359
+messageLog/data/messages-201707/messages.20170702-2359
+messageLog/data/messages-201707/messages.20170703-2359
+messageLog/data/messages.20170620-2359
+messageLog/data/messages-201707/messages.20170704-2359
+messageLog/boot.log.20170903-2359
+messageLog/blacklist
+messageLog/data/boot.log.20170903-2359
+boot.log.20170903-2359
