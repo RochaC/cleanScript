@@ -3,11 +3,20 @@ import argparse
 import codecs
 
 class Rsyslog():
-    def __init__(self,inFile,outFile):
+    def __init__(self,inFile,outFile,filter=None):
         self.file = inFile
         self.output = outFile
+        self.blacklist = filter
+        self.filter = []
         # self.verbose = 10000
 
+        if filter:
+            with open(filter) as blacklist_file:
+                for line in blacklist_file:
+                    self.filter.append(line)
+        print("The filter words is %s. \n" % self.filter)
+
+    def init(self):
         # catch fields
         self.time = "None"
         self.producer = "None"
@@ -18,13 +27,16 @@ class Rsyslog():
         self.dst_port = "None"
         self.app_name = "None"
 
-    def _parser(self,data,outfile):
-        line = data.split()
-        valid = line[3]
+        return
 
-        if re.search("\d+\.\d+\.\d+\.\d+",valid):
+    def _parser(self,data,outfile):
+        self.init()
+        line = data.split()
+        self.valid = re.search("\d+\.\d+\.\d+\.\d+", line[3])
+
+        if self.valid:
             # print(data)
-            self.producer = valid
+            self.producer = line[3]
 
             reg = re.search(".*time:\s*(?P<time>\d+-\d+-\d+ \d+:\d+:\d+);.*", data)
             if reg:
@@ -54,11 +66,17 @@ class Rsyslog():
             reg = re.search(".*app_name:\s*(?P<app_name>.*)", data)
             if reg:
                 self.app_name = reg.group("app_name")
+        return
 
-            fields = [self.time, self.producer, self.event,
-                           self.src_ip, self.src_port, self.dst_ip,
-                           self.dst_port, self.app_name]
-            outfile.write(",".join(fields)+"\n")
+    def _filter(self,data):
+        for cond in self.filter:
+            # modify app_name bug
+            if re.search("app_name", cond):
+                cond = cond+";"
+            mod_data = data.strip()+";"
+            if re.search(cond, mod_data):
+                return True
+        return False
 
     def run(self):
         with codecs.open(self.file, "r", encoding='utf-8', errors='ignore') as file,\
@@ -66,21 +84,34 @@ class Rsyslog():
             # write field name
             outfile.write("time,producer,event,src_ip,src_port,dst_ip,dst_port,app_name\n")
             for i,line in enumerate(file):
+                if self._filter(line):
+                    continue
+                # print(line)
                 self._parser(line,outfile)
-                # break
+
+                # write to file
+                if self.valid:
+                    fields = [self.time, self.producer, self.event,
+                              self.src_ip, self.src_port, self.dst_ip,
+                              self.dst_port, self.app_name]
+                    # print(",".join(fields) + "\n")
+                    outfile.write(",".join(fields) + "\n")
+                # if i > 10:
+                #     break
                 # if i % self.verbose:
                 print("Line %d processed." %i)
 
 def main():
-    infile = "data-11.txt"
-    outfile = "test.txt"
+    # infile = "data-11.txt"
+    # outfile = "test.txt"
 
     parser = argparse.ArgumentParser(description="rsyslog parser")
     parser.add_argument("--input",action="store",help="input file name")
     parser.add_argument("--output",action="store",help="output file name")
+    parser.add_argument("--filter", action="store", help="filter condition file")
     args = parser.parse_args()
 
-    rsys = Rsyslog(args.input, args.output)
+    rsys = Rsyslog(args.input, args.output,args.filter)
     rsys.run()
 
 if __name__ == '__main__':
