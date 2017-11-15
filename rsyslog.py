@@ -13,7 +13,7 @@ class Rsyslog():
         if filter:
             with open(filter) as blacklist_file:
                 for line in blacklist_file:
-                    self.filter.append(line)
+                    self.filter.append(line.strip())
         print("The filter words is %s. \n" % self.filter)
 
     def init(self):
