@@ -26,21 +26,26 @@ class Rsyslog():
         self.dst_ip = "None"
         self.dst_port = "None"
         self.app_name = "None"
-
+        self.valid = False
         return
 
     def _parser(self,data,outfile):
         self.init()
         line = data.split()
-        self.valid = re.search("\d+\.\d+\.\d+\.\d+", line[3])
-
-        if self.valid:
-            # print(data)
+        producer_ip = line[3]
+        # print(producer_ip)
+        # if producer_ip == "30.1.32.221" or producer_ip == "30.1.32.223":
+        if line[4] == "rule_id:":
+            # print("catch it ")
+            self.valid = True
+        if self.valid == True:
             self.producer = line[3]
 
             reg = re.search(".*time:\s*(?P<time>\d+-\d+-\d+ \d+:\d+:\d+);.*", data)
             if reg:
                 self.time = reg.group("time")
+            # else:
+            #     print(data)
 
             reg = re.search(".*;event:\s*(?P<event>.*?);.*", data)
             if reg:
@@ -48,7 +53,7 @@ class Rsyslog():
 
             reg = re.search(".*src_addr:\s*(?P<src_addr>\d+\.\d+\.\d+\.\d+);.*", data)
             if reg:
-                self.src_addr = reg.group("src_addr")
+                self.src_ip = reg.group("src_addr")
 
             reg = re.search(".*src_port:\s*(?P<src_port>\d+);.*", data)
             if reg:
@@ -57,7 +62,7 @@ class Rsyslog():
 
             reg = re.search(".*dst_addr:\s*(?P<dst_addr>\d+\.\d+\.\d+\.\d+);.*", data)
             if reg:
-                self.dst_addr = reg.group("dst_addr")
+                self.dst_ip = reg.group("dst_addr")
 
             reg = re.search(".*dst_port:\s*(?P<dst_port>\d+);.*", data)
             if reg:
@@ -98,7 +103,6 @@ class Rsyslog():
                     outfile.write(",".join(fields) + "\n")
                 # if i > 10:
                 #     break
-                # if i % self.verbose:
                 print("Line %d processed." %i)
 
 def main():
